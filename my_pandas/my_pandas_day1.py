@@ -325,4 +325,33 @@ def one_list_duo():
     )
     my_bar.render("./data_table/html/电影类型.html")
 
-one_list_duo()
+# one_list_duo()
+
+def to_compare_huan_compare():
+    # 同比：今年1月份-去年1月份/去年1月份
+    # 同比：今年1月份-今年2月份/今年2月份
+    substance=pd.read_csv('./data_table/beijing_tianqi_2017-2019.csv',index_col='ymd',parse_dates=True)
+    substance['bWendu']=substance['bWendu'].str.replace('℃','').astype('int32')
+    substance['yWendu']=substance['yWendu'].str.replace('℃','').astype('int32')
+    # 对月份进行重新采样
+    substance=substance[['bWendu']].resample('M').mean().copy()
+    # 进行重新排序
+    substance.sort_values('bWendu',inplace=True,ascending=True)
+    substance=substance.iloc[1:55]
+    # substance.plot()
+    # plt.show()
+    substance['tobi']=substance['bWendu'].pct_change(periods=1)
+    substance['huanbi']=substance['bWendu'].pct_change(periods=12)
+    print(substance)
+    # 顺便提一下isin包含指某列表()指某列只要包含的例如df['ddd'].isin(1,2,3)表示ddd列表只要ddd
+# to_compare_huan_compare()
+import pymysql as sql
+from sqlalchemy import create_engine
+
+def pandas_sql():
+    subs=pd.read_excel('./data_table/crazyant_blog_articles_source.xlsx')
+    sql_commit=create_engine('mysql+pymysql://root:123456@localhost:3306/pandas_base')
+    subs.to_sql('pandas_base',sql_commit,if_exists='replace',index=False)
+
+
+pandas_sql()
