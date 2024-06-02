@@ -325,7 +325,7 @@ def one_list_duo():
     )
     my_bar.render("./data_table/html/电影类型.html")
 
-# one_list_duo()
+one_list_duo()
 
 def to_compare_huan_compare():
     # 同比：今年1月份-去年1月份/去年1月份
@@ -347,11 +347,64 @@ def to_compare_huan_compare():
 # to_compare_huan_compare()
 import pymysql as sql
 from sqlalchemy import create_engine
-
 def pandas_sql():
-    subs=pd.read_excel('./data_table/crazyant_blog_articles_source.xlsx')
-    sql_commit=create_engine('mysql+pymysql://root:123456@localhost:3306/pandas_base')
-    subs.to_sql('pandas_base',sql_commit,if_exists='replace',index=False)
+    # 读取 Excel 文件中的数据
+    subs = pd.read_excel('./data_table/crazyant_blog_articles_source.xlsx')
+
+    # 创建数据库连接
+    engine = create_engine('mysql+mysqlconnector://root:123456@localhost:3306/pandas_base')
+
+    # 将数据写入 MySQL 数据库
+    subs.to_sql('pandas_base', con=engine, if_exists='replace', index=False)
+    # 执行 SQL 查询并打印结果
+    result = pd.read_sql('SELECT * FROM pandas_base', con=engine)
+    engine.dispose()
+# pandas_sql()
+import requests
+from bs4 import BeautifulSoup
+import re
 
 
-pandas_sql()
+def my_jiebe_english():
+    df_dict = pd.read_csv("./data_table/ecdict.csv")#读取词典
+    my_list=df_dict[['word', 'translation']]#取出单词和解释两列表
+    url = "https://pandas.pydata.org/docs/user_guide/indexing.html"
+    html_cont = requests.get(url).text
+    soup = BeautifulSoup(html_cont)
+    html_text = soup.get_text()#对爬取出来的文本进行提取
+    word_list = re.split("""[ ,.\(\)/\n|\-:=\$\["']""", html_text)#过滤掉特殊字符
+    with open("./data_table/stop_words.txt") as fin:#读取停用词
+        stop_words = set(fin.read().split("\n"))#消除重复的停用词
+    word_list_clean = []
+    for word in word_list:
+        word = str(word).lower().strip()
+        # 过滤掉空词、数字、单个字符的词、停用词
+        if not word or word.isnumeric() or len(word) <= 1 or word in stop_words:
+            continue
+        word_list_clean.append(word)#把提取出来的单词重新创建一个dataframe
+    df_words = pd.DataFrame({
+        "word": word_list_clean
+    })
+    print(df_words)
+    # 对 DataFrame df_words 进行以下操作
+    df_words = (
+        df_words
+        # 按 "word" 列进行分组，然后对 "word" 列进行聚合操作
+        .groupby("word")["word"]
+        # 计算每个组的大小，并命名聚合结果列为 "count"
+        .agg(count="size")
+        # 将聚合结果重置索引，使 "word" 成为一列，而不是索引
+        .reset_index()
+        # 按 "count" 列进行排序，降序排列（即出现频率最高的词排在最前）
+        .sort_values(by="count", ascending=False)
+    )
+
+    df_merge = pd.merge(
+        left=df_dict,
+        right=df_words,
+        left_on="word",
+        right_on="word"
+    )
+    # 然后对其进行合并
+    print(df_merge[['word','translation']])
+# my_jiebe_english()
