@@ -275,7 +275,6 @@ def machine_learn():
      y = alive.Survived
      # 预测目标
      from sklearn.ensemble import GradientBoostingClassifier
-
      clf = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0,
                                       max_depth=1, random_state=0).fit(X, y)
      # 训练模型
@@ -310,4 +309,20 @@ def log_details():
     bar.render()
 # log_details()
 
+def one_list_duo():
+    # 一行内容拆分出来
+    # explode被内容为列表的列调用，该列的每个元素都会被拆分出来
+    substance=pd.read_csv('./data_table/movies.csv')
+    substance['genres']=substance['genres'].map(lambda x:x.split('|'))
+    new_substance=substance.explode('genres').copy()
+    new_substance['genres'].value_counts().plot.bar()
+    plt.show()
+    my_bar=Bar()
+    my_bar.add_yaxis("电影类型",new_substance['genres'].value_counts().tolist())
+    my_bar.add_xaxis(new_substance['genres'].value_counts().index.tolist())
+    my_bar.set_global_opts(
+        xaxis_opts=opts.AxisOpts(axislabel_opts=opts.LabelOpts(rotate=-45))
+    )
+    my_bar.render("./data_table/html/电影类型.html")
 
+one_list_duo()
