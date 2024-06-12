@@ -408,3 +408,61 @@ def my_jiebe_english():
     # 然后对其进行合并
     print(df_merge[['word','translation']])
 # my_jiebe_english()
+
+
+def xingjiqi():
+    substance=pd.read_csv('./data_table/beijing_tianqi_2017-2019.csv', encoding='utf-8')
+    substance.set_index(pd.to_datetime(substance['ymd']),inplace=True)
+    substance.drop('ymd',axis=1,inplace=True)
+    list_month=substance.index.month
+    print(list_month.unique())
+
+# xingjiqi()
+def change(data):
+    data['姓名'],data['性别'],data['年龄'],data['地区']=data['数据'].split(":")
+    return data
+def one_change_really():
+    substance=pd.read_excel('./data_table/学生数据表.xlsx')
+    substance_new=substance.apply(change,axis=1)
+    substance_new.drop('数据',axis=1,inplace=True)
+    print(substance_new)
+# one_change_really()
+def change_index():
+    substance=pd.read_excel('./data_table/学生数据表.xlsx')
+    substance.set_index('学号',inplace=True)
+    # 把行索引和列索引相互转换transpose和T是一样作用
+    print(substance.T)
+    blit=substance.transpose()
+    bi=['S003', 'S002', 'S003', 'S004', 'S005', 'S006', 'S007', 'S008', 'S009',
+       'S010', 'S011', 'S012', 'S013', 'S014', 'S015', 'S016', 'S017', 'S018',
+       'S019', 'S020', 'S021', 'S022', 'S023', 'S024']
+    print(blit[bi])
+# change_index()
+def compute(x):
+    wc=x['bWendu']-x['yWendu']
+    mean=(x['bWendu']+x['yWendu'])/2
+    return wc,mean
+def details_apply():
+    substance=pd.read_csv('./data_table/beijing_tianqi_2017-2019.csv')
+    substance['bWendu']=substance['bWendu'].apply(lambda x:int(x.replace('℃','')))
+    substance['yWendu']=substance['yWendu'].apply(lambda x:int(x.replace('℃','')))
+    substance[['pwd','wc']]=substance.apply(compute,axis=1,result_type='expand')
+    print(substance.head())
+    list_my=substance.columns.tolist()
+    list_my.remove('pwd')
+    list_my.remove('wc')
+    list_my.insert(list_my.index('yWendu')+1,'pwd')
+    list_my.insert(list_my.index('yWendu')+1,'wc')
+    print(substance[list_my])
+# details_apply()
+
+def query_details():
+    substance=pd.read_csv('./data_table/beijing_tianqi_2017-2019.csv')
+    substance['bWendu']=substance['bWendu'].apply(lambda x:int(x.replace('℃','')))
+    substance['yWendu']=substance['yWendu'].apply(lambda x:int(x.replace('℃','')))
+    data=5
+    print(substance.query('bWendu == 5' ))
+    # y引用外部值要加@
+    print(substance.query('bWendu == @data' ))
+
+# query_details()
