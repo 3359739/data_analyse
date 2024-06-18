@@ -6,7 +6,8 @@
 """
 import requests
 import json
-
+# 不知道怎么用看这里
+# https://www.w3cschool.cn/minicourse/play/antpython06?cp=26206&gid=0
 cookie_jar = requests.cookies.RequestsCookieJar()
 with open("./cookie.txt") as fin:
     cookiejson = json.loads(fin.read())

@@ -28,7 +28,7 @@ def data_statistics():
     substance['yWendu'] = substance['yWendu'].str.replace("℃", "").astype('int32')
     # 提取所有数字列的统计结果
     print(substance.describe())
-    # 去从
+    # 唯一值
     print(substance['fengxiang'].unique())
     # 统计出现次数
     print(substance['fengxiang'].value_counts())
@@ -279,6 +279,7 @@ def machine_learn():
                                       max_depth=1, random_state=0).fit(X, y)
      # 训练模型
      clf.score(X, y)
+
      X.drop_duplicates().sort_values(by=["Pclass", "Parch"])
      print(clf.predict([[2, 4]]))
      print(clf.predict_proba([[2, 4]]))
@@ -325,7 +326,7 @@ def one_list_duo():
     )
     my_bar.render("./data_table/html/电影类型.html")
 
-one_list_duo()
+# one_list_duo()
 
 def to_compare_huan_compare():
     # 同比：今年1月份-去年1月份/去年1月份
@@ -466,3 +467,27 @@ def query_details():
     print(substance.query('bWendu == @data' ))
 
 # query_details()
+def  discreteAnalysisOfData():
+     data=pd.DataFrame(np.random.randint(1,500,[50,2]))#生成50行2列的数据都是1到500的
+     data_table=pd.cut(data.iloc[:, 0], bins=[1,100,200,300,400,500],labels=['1-100','101-200','201-300','301-400','401-500'])#对里面的范围进行抽取bis为区间[1,100,200,300,400,500]
+     data_table.value_counts()
+# discreteAnalysisOfData()
+
+def perspective():
+    substance=pd.read_excel("./data_table/weather.xlsx")
+    substance.columns=['日期','天气','温度','风力风向']
+    substance['日期']=substance['日期'].str.replace('年','-').str.replace('月','-').str.replace('日','-')
+    substance['温度']=substance['温度'].str.replace('℃','')
+    substance['最低温温度']=substance['温度'].str.split("/").map(lambda x:x[0]).astype('int')
+    substance['最高温温度']=substance['温度'].str.split("/").map(lambda x:x[1]).astype('int')
+    substance['天气']=substance['天气'].str.split("/").map(lambda x:x[0])
+    substance['风力风向']=substance['风力风向'].str.split("/").map(lambda x:x[0])
+    del substance['温度']
+    substance['日期']=pd.to_datetime(substance['日期'])
+    substance.to_csv('www.csv')
+    mean_my=substance.pivot_table(index='天气',columns='风力风向',values='最低温温度',aggfunc=np.mean)
+    # 指定substance天气为的index为行，columns为列，values为最低温温度，aggfunc为求均值
+    # 交叉表(相当于分组后的计数)
+    size_my=pd.crosstab(substance['天气'],substance['风力风向'])
+    print("天气与风向的交叉表：\n",size_my)
+perspective()
